@@ -9,13 +9,13 @@
 #include "interfaces/i_hit_record.cuh"
 #include "ray.cuh"
 
-class RayInteractions final
+class RayInteractions final : public IRayInteractions
 {
 
 public:
-	__device__ __host__ virtual void diffuse_scatter(const IHitRecord &hit_record, IRay & scattered_ray) = 0;
-	__device__ __host__ virtual void specular_scatter(const IRay & incoming_ray, const IHitRecord & hit_record, IRay & scattered_ray) = 0;
-	__device__ __host__ virtual void refraction_scatter(const IRay & incoming_ray, const IHitRecord & hit_record, IRay & scattered_ray) = 0;
+	__device__ __host__ void diffuse_scatter(const IHitRecord &hit_record, IRay & scattered_ray) final;
+	__device__ __host__ void specular_scatter(const IRay & incoming_ray, const IHitRecord & hit_record, IRay & scattered_ray) final;
+	__device__ __host__ void refraction_scatter(const IRay & incoming_ray, const IHitRecord & hit_record, IRay & scattered_ray) final;
 
 };
 

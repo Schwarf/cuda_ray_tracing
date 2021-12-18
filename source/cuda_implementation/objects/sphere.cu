@@ -4,7 +4,7 @@
 
 #include "sphere.cuh"
 
-__device__ __host__ Sphere::Sphere(Vector3D &center, float radius, const IMaterial * const material)
+__device__ __host__ Sphere::Sphere(Vector3D &center, float radius, const IMaterial * material)
 {
 	center_ = center;
 	radius_ = radius;
