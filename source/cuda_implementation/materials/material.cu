@@ -4,7 +4,6 @@
 
 #include "material.cuh"
 
-
 __device__ __host__ Vector3D Material::rgb_color() const
 {
 	return rgb_color_;
@@ -40,7 +39,7 @@ __device__ __host__ void Material::set_ambient_reflection(float ambient_coeffici
 }
 __device__ __host__ void Material::set_shininess(float shininess)
 {
-	 shininess_ = shininess;
+	shininess_ = shininess;
 }
 __device__ __host__ float Material::refraction_index() const
 {
@@ -62,3 +61,5 @@ __device__ __host__ void Material::set_transparency(float transparency)
 {
 	transparency_ = transparency;
 }
+
+

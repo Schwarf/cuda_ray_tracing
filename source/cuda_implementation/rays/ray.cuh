@@ -11,12 +11,15 @@
 class Ray final: public IRay
 {
 public:
-	__device__ __host__ Ray(Point3D &origin, Vector3D &direction);
+	__device__ __host__ Ray() = default;
+	__device__ __host__ Ray(const Point3D &origin, const Vector3D &direction);
 	__device__ __host__ Vector3D direction_normalized() const final;
 	__device__ __host__ Point3D origin() const final;
  	__device__ __host__ ~Ray() final = default;
+	__device__ __host__ void set_direction(const Vector3D &direction) override;
+	__device__ __host__ void set_origin(const Point3D &origin) override;
 private:
-	Vector3D direction_normalized_;
+	Vector3D direction_;
 	Point3D origin_;
 };
 

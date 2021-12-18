@@ -7,6 +7,9 @@
 
 #include "interfaces/i_material.cuh"
 #include "./../miscellaneous/templates/n_tuple.cuh"
+#include "./../rays/ray.cuh"
+#include "../rays/interfaces/i_hit_record.cuh"
+#include "../rays/interfaces/i_ray.cuh"
 
 class Material final: public IMaterial
 {
