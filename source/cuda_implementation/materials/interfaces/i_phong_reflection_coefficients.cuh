@@ -6,7 +6,7 @@
 #define CUDA_RAY_TRACING_I_REFLECTION_COEFFICIENTS_H
 
 
-class IReflectionCoefficients
+class IPhongReflectionCoefficients
 {
 public:
 	__device__ __host__ virtual float specular_reflection() const = 0;
@@ -25,7 +25,7 @@ public:
 
 	__device__ __host__ virtual void set_shininess(float shininess) = 0;
 
-	__device__ __host__ virtual ~IReflectionCoefficients() = default;
+	__device__ __host__ virtual ~IPhongReflectionCoefficients() = default;
 };
 
 #endif //CUDA_RAY_TRACING_I_REFLECTION_COEFFICIENTS_H

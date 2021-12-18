@@ -17,25 +17,25 @@ public:
 	__device__ __host__ float diffuse_reflection() const final;
 	__device__ __host__ float ambient_reflection() const final;
 	__device__ __host__ float shininess() const final;
-	__device__ __host__ float refraction_coefficient() const final;
-	__device__ __host__ float specular_exponent() const final;
+	__device__ __host__ float refraction_index() const final;
 	__device__ __host__ void set_rgb_color(Vector3D color) final;
 	__device__ __host__ void set_specular_reflection(float specular_coefficient) final;
 	__device__ __host__ void set_diffuse_reflection(float diffuse_coefficient) final;
 	__device__ __host__ void set_ambient_reflection(float ambient_coefficient) final;
-	__device__ __host__ void set_refraction_coefficient(float refraction_coefficient) final;
-	__device__ __host__ void set_specular_exponent(float specular_exponent) final;
+	__device__ __host__ void set_refraction_index(float refraction_index) final;
 	__device__ __host__ void set_shininess(float shininess) final;
 	__device__ __host__ ~Material() override = default;
+	__device__ __host__ float transparency() const override;
+	__device__ __host__ void set_transparency(float transparency) override;
 
 private:
-	float specular_reflection_{-1.0};
-	float diffuse_reflection_{-1.0};
-	float ambient_reflection_{-1.0};
-	float shininess_{-1.0};
-	float specular_exponent_{-1.0};
+	float transparency_{};
+	float diffuse_reflection_{};
+	float ambient_reflection_{};
+	float shininess_{};
+	float specular_reflection_{};
 	Vector3D rgb_color_{0., 0., 0.};
-	float refraction_coefficient_{-1.0};
+	float refraction_index_{};
 };
 
 

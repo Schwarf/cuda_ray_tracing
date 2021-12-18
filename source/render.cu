@@ -17,9 +17,9 @@ __device__ __host__ void build_material( IMaterial * p_material)
 	p_material->set_specular_reflection(0.3f);
 	p_material->set_diffuse_reflection(0.6);
 	p_material->set_ambient_reflection(0.3);
-	p_material->set_shininess(0.0001);
-	p_material->set_specular_exponent(50.0);
-	p_material->set_refraction_coefficient(1.0);
+	p_material->set_shininess(50.0);
+	p_material->set_transparency(0.0001);
+	p_material->set_refraction_index(1.0);
 	Vector3D color = Vector3D{0.9, 0.2, 0.3};
 	p_material->set_rgb_color(color);
 }
