@@ -2,25 +2,23 @@
 // Created by andreas on 03.10.21.
 //
 
-#ifndef SIMPLE_RAY_TRACING_RAY_H
-#define SIMPLE_RAY_TRACING_RAY_H
+#ifndef CUDA_RAY_TRACING_RAY_H
+#define CUDA_RAY_TRACING_RAY_H
 
 #include "interfaces/i_ray.cuh"
-#include "../miscellaneous/templates/c_vector.cuh"
+#include "../miscellaneous/templates/n_tuple.cuh"
 
 class Ray final: public IRay
 {
 public:
-	__device__ Ray(c_vector3 &origin, c_vector3 &direction);
-	__device__ c_vector3 direction_normalized() const final;
-
-	__device__ c_vector3 origin() const final;
-
-	__device__ ~Ray() final = default;
+	__device__ __host__ Ray(Point3D &origin, Vector3D &direction);
+	__device__ __host__ Vector3D direction_normalized() const final;
+	__device__ __host__ Point3D origin() const final;
+ 	__device__ __host__ ~Ray() final = default;
 private:
-	c_vector3 direction_normalized_;
-	c_vector3 origin_;
+	Vector3D direction_normalized_;
+	Point3D origin_;
 };
 
 
-#endif //SIMPLE_RAY_TRACING_RAY_H
+#endif //CUDA_RAY_TRACING_RAY_H

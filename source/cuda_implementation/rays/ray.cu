@@ -4,18 +4,18 @@
 
 #include "ray.cuh"
 
-__device__ Ray::Ray(c_vector3 &origin, c_vector3 &direction)
+__device__ __host__ Ray::Ray(Point3D &origin, Vector3D &direction)
 {
 	direction_normalized_ = direction.normalize();
 	origin_ = origin;
 }
 
-__device__ c_vector3 Ray::direction_normalized() const
+__device__ __host__ Vector3D Ray::direction_normalized() const
 {
 	return direction_normalized_;
 }
 
-__device__ c_vector3 Ray::origin() const
+__device__ __host__ Point3D Ray::origin() const
 {
 	return origin_;
 }
