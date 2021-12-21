@@ -5,82 +5,17 @@
 #include "cuda_implementation/miscellaneous/templates/n_tuple.cuh"
 #include "cuda_implementation/rays/ray.cuh"
 #include "cuda_implementation/rays/hit_record.cuh"
-#include "cuda_implementation/objects/sphere.cuh"
-#include "cuda_implementation/objects/object_list.cuh"
-#include <fstream>
-#include "cuda_implementation/materials/material.cuh"
 #include "cuda_implementation/rays/ray_interactions.cuh"
-#include <iostream>
 #include "cuda_implementation/miscellaneous/CUDAMemory.cuh"
+#include "cuda_implementation/objects/interfaces/i_object_list.cuh"
+#include "cuda_implementation/create_scene/create_scene.cuh"
+#include <fstream>
+#include <iostream>
 
 #define checkCudaErrors(value) check_cuda( (value), #value, __FILE__, __LINE__)
 
-__device__ __host__ void build_material(IMaterial * const p_material)
-{
-	p_material->set_specular_reflection(0.3f);
-	p_material->set_diffuse_reflection(0.6);
-	p_material->set_ambient_reflection(0.3);
-	p_material->set_shininess(50.0);
-	p_material->set_transparency(0.0001);
-	p_material->set_refraction_index(1.0);
-	Vector3D color = Vector3D{0.9, 0.2, 0.3};
-	p_material->set_rgb_color(color);
-}
-
-
-__device__ __host__ void build_material2(IMaterial * const p_material)
-{
-	p_material->set_specular_reflection(0.5f);
-	p_material->set_diffuse_reflection(0.2);
-	p_material->set_ambient_reflection(0.1);
-	p_material->set_shininess(50.0);
-	p_material->set_transparency(0.0001);
-	p_material->set_refraction_index(1.0);
-	Vector3D color = Vector3D{0.3, 0.9, 0.3};
-	p_material->set_rgb_color(color);
-}
-
-__device__ __host__ void build_material3(IMaterial * const p_material)
-{
-	p_material->set_specular_reflection(0.2f);
-	p_material->set_diffuse_reflection(0.3);
-	p_material->set_ambient_reflection(0.5);
-	p_material->set_shininess(50.0);
-	p_material->set_transparency(0.0001);
-	p_material->set_refraction_index(1.0);
-	Vector3D color = Vector3D{0.6, 0.9, 0.9};
-	p_material->set_rgb_color(color);
-}
-
-
-
-__global__ void create_objects(ITargetObject ** target_objects, IObjectList **object_list)
-{
-	if (threadIdx.x == 0 && blockIdx.x == 0) {
-		auto sphere_center = Vector3D{-3.5f, 3.5f, -15.f};
-		auto sphere_radius = 1.5f;
-		auto sphere_center2 = Vector3D{0.5f, -1.5f, -10.f};
-		auto sphere_radius2 = 2.5f;
-		auto sphere_center3 = Vector3D{2.5f, 1.5f, -10.f};
-		auto sphere_radius3 = 0.5f;
-
-		IMaterial *p_material = new Material();
-		IMaterial *p_material2 = new Material();
-		IMaterial *p_material3 = new Material();
-
-		build_material(p_material);
-		build_material2(p_material2);
-		build_material3(p_material3);
-
-		target_objects[0] = new Sphere(sphere_center, sphere_radius, p_material);
-		target_objects[1] = new Sphere(sphere_center2, sphere_radius2, p_material2);
-		target_objects[2] = new Sphere(sphere_center3, sphere_radius3, p_material3);
-		*object_list = new ObjectList(target_objects, 3);
-	}
-}
-
 __device__ __host__ Color get_pixel_color(const IRay &ray,
-										  IObjectList ** object_list,
+										  IObjectList ** const object_list,
 										  IHitRecord &hit_record,
 										  IRayInteractions & ray_interaction,
 										  size_t recursion_depth)
@@ -132,13 +67,12 @@ int main()
 	size_t width = 1024;
 	size_t height = 768;
 	// Why is 32 the maximum number of threads per block
-	constexpr size_t threads_per_block = 32;
+	//constexpr size_t threads_per_block = 32;
 	//dim3 number_of_threads(threads_per_block, threads_per_block);
-
 	//dim3 number_of_blocks(width / threads_per_block, height / threads_per_block);
-	int number_of_blocks = 768;
-	int number_of_threads{1024};
-	size_t buffer_size = width * height * sizeof(float3);
+	size_t number_of_blocks = 768;
+	size_t number_of_threads{1024};
+	size_t buffer_size = width * height * sizeof(Color);
 	std::cout << buffer_size << std::endl;
 	Color *buffer;
 	CUDAMemory<Color>::allocate_managed_instance(buffer, buffer_size);
@@ -161,7 +95,8 @@ int main()
 		for (size_t color_index = 0; color_index < 3; color_index++) {
 			ofs << static_cast<char>(255 * std::max(0.f, std::min(1.f, buffer[pixel_index][color_index])));
 		}
-	}CUDAMemory<Color>::release(buffer);
-
+	}
+	CUDAMemory<Color>::release(buffer);
+	//CUDAMemory<ITargetObject>::release_pointer_to_instance(target_objects);
 	return 0;
 }
