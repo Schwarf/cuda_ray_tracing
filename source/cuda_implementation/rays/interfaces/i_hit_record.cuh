@@ -5,7 +5,7 @@
 #ifndef I_HIT_RECORD_CUH
 #define I_HIT_RECORD_CUH
 #include "./../../miscellaneous/templates/n_tuple.cuh"
-
+#include "./../../materials/interfaces/i_material.cuh"
 class IHitRecord
 {
 public:
@@ -13,7 +13,8 @@ public:
 	__device__ __host__ virtual Point3D hit_point() const = 0;
 	__device__ __host__ virtual void set_hit_normal(const Vector3D & hit_normal)  = 0;
 	__device__ __host__ virtual void set_hit_point(const Point3D & hit_point)  = 0;
-
+	__device__ __host__ virtual const IMaterial* get_material() const = 0;
+	__device__ __host__ virtual void set_material(const IMaterial * material) = 0;
 	__device__ __host__ virtual ~IHitRecord() = default;
 };
 

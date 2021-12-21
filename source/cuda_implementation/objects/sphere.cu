@@ -43,6 +43,7 @@ __device__ __host__ bool Sphere::does_ray_intersect(const IRay & ray,  IHitRecor
 	}
 	hit_record.set_hit_point(ray.origin() + ray.direction_normalized() * closest_hit_distance);
 	hit_record.set_hit_normal((hit_record.hit_point() - center_).normalize());
+	hit_record.set_material(material_);
 	return true;
 }
 

@@ -19,3 +19,11 @@ __device__ __host__ void HitRecord::set_hit_point(const Point3D &hit_point)
 {
 	hit_point_ = hit_point;
 }
+__device__ __host__ const IMaterial *HitRecord::get_material() const
+{
+	return material_;
+}
+__device__ __host__ void HitRecord::set_material(const IMaterial *material)
+{
+	material_ = material;
+}

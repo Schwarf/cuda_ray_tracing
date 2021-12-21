@@ -40,15 +40,42 @@ __device__ __host__ void build_material2(IMaterial * const p_material)
 	p_material->set_rgb_color(color);
 }
 
+
+__global__ void create_objects(ITargetObject ** target_objects, ObjectList *object_list)
+{
+	if (threadIdx.x == 0 && blockIdx.x == 0) {
+		auto sphere_center = Vector3D{-3.5f, 3.5f, -15.f};
+		auto sphere_radius = 1.5f;
+		auto sphere_center2 = Vector3D{0.5f, -1.5f, -10.f};
+		auto sphere_radius2 = 2.5f;
+
+		Material material;
+		IMaterial *p_material = &material;
+
+		Material material2;
+		IMaterial *p_material2 = &material2;
+
+		build_material(p_material);
+		build_material2(p_material2);
+		auto sphere = Sphere(sphere_center, sphere_radius, p_material);
+		auto sphere2 = Sphere(sphere_center2, sphere_radius2, p_material2);
+
+		auto p_sphere = &sphere;
+		auto p_sphere2 = &sphere2;
+		target_objects[0] = p_sphere;
+		target_objects[1] = p_sphere2;
+		object_list = new ObjectList(target_objects, 2);
+	}
+}
+
 __device__ __host__ Color get_pixel_color(const IRay &ray,
-										  const IObjectList &object_list,
+										  ObjectList &object_list,
 										  IHitRecord &hit_record,
 										  IRayInteractions & ray_interaction,
 										  size_t recursion_depth)
 {
-	auto p_object = object_list.get_object_hit_by_ray(ray, hit_record);
-
-	if(p_object == nullptr) {
+	auto is_hit = object_list.hit_by_ray(ray, hit_record);
+	if (!is_hit) {
 		return Color{0.2, 0.7, 0.8};
 	}
 	recursion_depth--;
@@ -58,13 +85,13 @@ __device__ __host__ Color get_pixel_color(const IRay &ray,
 	ray_interaction.specular_scatter(ray, hit_record, specular_ray);
 //	auto reflected_color = get_pixel_color(diffuse_ray, sphere, hit_record, ray_interaction, recursion_depth);
 //	auto refracted_color = get_pixel_color(specular_ray, sphere, hit_record, ray_interaction, recursion_depth);
-	Color diffuse_color = p_object->material()->diffuse_reflection() *p_object->material()->rgb_color();
+	Color diffuse_color = hit_record.get_material()->diffuse_reflection() * hit_record.get_material()->rgb_color();
 	Color white = Color{1, 1, 1};
-	Color specular_color = white * p_object->material()->specular_reflection();
+	Color specular_color = white * hit_record.get_material()->specular_reflection();
 	return diffuse_color + specular_color;
 }
 
-__global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height)
+__global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height, ITargetObject ** object_list)
 {
 	//size_t width = threadIdx.x + blockIdx.x * blockDim.x;
 	//size_t height = threadIdx.y + blockIdx.y * blockDim.y;
@@ -92,19 +119,20 @@ __global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height)
 	build_material2(p_material2);
 	auto sphere = Sphere(sphere_center, sphere_radius, p_material);
 	auto sphere2 = Sphere(sphere_center2, sphere_radius2, p_material2);
-	auto object_list = ObjectList<2>();
+
+
 	auto p_sphere = & sphere;
 	auto p_sphere2 = & sphere2;
-	object_list.add_object(p_sphere);
-	object_list.add_object(p_sphere2);
+	object_list[0] = p_sphere;
+	object_list[1] = p_sphere2;
+	auto list = ObjectList(object_list, 2);
 
 	Vector3D direction = Vector3D{x_direction, y_direction, z_direction}.normalize();
 	Vector3D origin = Vector3D{0, 0, 0};
 	auto ray = Ray(origin, direction);
 	auto hit_record = HitRecord();
 	auto ray_interactions = RayInteractions();
-	Color pixel_color = get_pixel_color(ray, object_list, hit_record, ray_interactions, 2);
-
+	Color pixel_color = get_pixel_color(ray, list, hit_record, ray_interactions, 2);
 	size_t pixel_index = height * max_width + width;
 	buffer[pixel_index] = pixel_color;
 
@@ -125,9 +153,14 @@ int main()
 	std::cout << buffer_size << std::endl;
 	Color *buffer;
 	CUDAMemory<Color>::allocate_managed_instance(buffer, buffer_size);
+	ITargetObject ** target_objects;
+	//ObjectList *object_list;
+	//CUDAMemory<ObjectList>::allocate_instance(object_list, 1);
+	CUDAMemory<ITargetObject>::allocate_pointer_to_instance(target_objects, 2);
 	//cudaMallocManaged((void **)&buffer, buffer_size);
+	//create_objects<<<1,1>>>(target_objects, object_list);
 
-	render_it<<<number_of_blocks, number_of_threads>>>(buffer, width, height);
+	render_it<<<number_of_blocks, number_of_threads>>>(buffer, width, height, target_objects);
 	cudaGetLastError();
 	cudaDeviceSynchronize();
 	std::ofstream ofs;
