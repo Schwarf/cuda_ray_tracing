@@ -11,6 +11,7 @@
 #include "cuda_implementation/materials/material.cuh"
 #include "cuda_implementation/rays/ray_interactions.cuh"
 #include <iostream>
+#include "cuda_implementation/miscellaneous/CUDAMemory.cuh"
 
 #define checkCudaErrors(value) check_cuda( (value), #value, __FILE__, __LINE__)
 
@@ -122,8 +123,9 @@ int main()
 	int number_of_threads{1024};
 	size_t buffer_size = width * height * sizeof(float3);
 	std::cout << buffer_size << std::endl;
-	Vector3D *buffer;
-	cudaMallocManaged((void **)&buffer, buffer_size);
+	Color *buffer;
+	CUDAMemory<Color>::allocate_managed_instance(buffer, buffer_size);
+	//cudaMallocManaged((void **)&buffer, buffer_size);
 
 	render_it<<<number_of_blocks, number_of_threads>>>(buffer, width, height);
 	cudaGetLastError();
@@ -135,7 +137,7 @@ int main()
 		for (size_t color_index = 0; color_index < 3; color_index++) {
 			ofs << static_cast<char>(255 * std::max(0.f, std::min(1.f, buffer[pixel_index][color_index])));
 		}
-	}
+	}CUDAMemory<Color>::release(buffer);
 
 	return 0;
 }
