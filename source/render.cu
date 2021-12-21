@@ -40,41 +40,52 @@ __device__ __host__ void build_material2(IMaterial * const p_material)
 	p_material->set_rgb_color(color);
 }
 
+__device__ __host__ void build_material3(IMaterial * const p_material)
+{
+	p_material->set_specular_reflection(0.2f);
+	p_material->set_diffuse_reflection(0.3);
+	p_material->set_ambient_reflection(0.5);
+	p_material->set_shininess(50.0);
+	p_material->set_transparency(0.0001);
+	p_material->set_refraction_index(1.0);
+	Vector3D color = Vector3D{0.6, 0.9, 0.9};
+	p_material->set_rgb_color(color);
+}
 
-__global__ void create_objects(ITargetObject ** target_objects, ObjectList *object_list)
+
+
+__global__ void create_objects(ITargetObject ** target_objects, IObjectList **object_list)
 {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
 		auto sphere_center = Vector3D{-3.5f, 3.5f, -15.f};
 		auto sphere_radius = 1.5f;
 		auto sphere_center2 = Vector3D{0.5f, -1.5f, -10.f};
 		auto sphere_radius2 = 2.5f;
+		auto sphere_center3 = Vector3D{2.5f, 1.5f, -10.f};
+		auto sphere_radius3 = 0.5f;
 
-		Material material;
-		IMaterial *p_material = &material;
-
-		Material material2;
-		IMaterial *p_material2 = &material2;
+		IMaterial *p_material = new Material();
+		IMaterial *p_material2 = new Material();
+		IMaterial *p_material3 = new Material();
 
 		build_material(p_material);
 		build_material2(p_material2);
-		auto sphere = Sphere(sphere_center, sphere_radius, p_material);
-		auto sphere2 = Sphere(sphere_center2, sphere_radius2, p_material2);
+		build_material3(p_material3);
 
-		auto p_sphere = &sphere;
-		auto p_sphere2 = &sphere2;
-		target_objects[0] = p_sphere;
-		target_objects[1] = p_sphere2;
-		object_list = new ObjectList(target_objects, 2);
+		target_objects[0] = new Sphere(sphere_center, sphere_radius, p_material);
+		target_objects[1] = new Sphere(sphere_center2, sphere_radius2, p_material2);
+		target_objects[2] = new Sphere(sphere_center3, sphere_radius3, p_material3);
+		*object_list = new ObjectList(target_objects, 3);
 	}
 }
 
 __device__ __host__ Color get_pixel_color(const IRay &ray,
-										  ObjectList &object_list,
+										  IObjectList ** object_list,
 										  IHitRecord &hit_record,
 										  IRayInteractions & ray_interaction,
 										  size_t recursion_depth)
 {
-	auto is_hit = object_list.hit_by_ray(ray, hit_record);
+	auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
 	if (!is_hit) {
 		return Color{0.2, 0.7, 0.8};
 	}
@@ -91,7 +102,7 @@ __device__ __host__ Color get_pixel_color(const IRay &ray,
 	return diffuse_color + specular_color;
 }
 
-__global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height, ITargetObject ** object_list)
+__global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height, IObjectList ** object_list)
 {
 	//size_t width = threadIdx.x + blockIdx.x * blockDim.x;
 	//size_t height = threadIdx.y + blockIdx.y * blockDim.y;
@@ -104,35 +115,13 @@ __global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height,
 	float x_direction = float(width) - float(max_width) / 2.f;
 	float y_direction = float(height) - float(max_height) / 2.f;
 	float z_direction = -float(max_height + max_width) / 2.f;
-	auto sphere_center = Vector3D{-3.5f, 3.5f, -15.f};
-	auto sphere_radius = 1.5f;
-	auto sphere_center2 = Vector3D{0.5f, -1.5f, -10.f};
-	auto sphere_radius2 = 2.5f;
-
-	Material material;
-	IMaterial * p_material = & material;
-
-	Material material2;
-	IMaterial * p_material2 = & material2;
-
-	build_material(p_material);
-	build_material2(p_material2);
-	auto sphere = Sphere(sphere_center, sphere_radius, p_material);
-	auto sphere2 = Sphere(sphere_center2, sphere_radius2, p_material2);
-
-
-	auto p_sphere = & sphere;
-	auto p_sphere2 = & sphere2;
-	object_list[0] = p_sphere;
-	object_list[1] = p_sphere2;
-	auto list = ObjectList(object_list, 2);
 
 	Vector3D direction = Vector3D{x_direction, y_direction, z_direction}.normalize();
-	Vector3D origin = Vector3D{0, 0, 0};
+	Point3D origin = Point3D{0, 0, 0};
 	auto ray = Ray(origin, direction);
 	auto hit_record = HitRecord();
 	auto ray_interactions = RayInteractions();
-	Color pixel_color = get_pixel_color(ray, list, hit_record, ray_interactions, 2);
+	Color pixel_color = get_pixel_color(ray, object_list, hit_record, ray_interactions, 2);
 	size_t pixel_index = height * max_width + width;
 	buffer[pixel_index] = pixel_color;
 
@@ -154,15 +143,17 @@ int main()
 	Color *buffer;
 	CUDAMemory<Color>::allocate_managed_instance(buffer, buffer_size);
 	ITargetObject ** target_objects;
-	//ObjectList *object_list;
-	//CUDAMemory<ObjectList>::allocate_instance(object_list, 1);
-	CUDAMemory<ITargetObject>::allocate_pointer_to_instance(target_objects, 2);
+	IObjectList **object_list;
+	CUDAMemory<IObjectList>::allocate_pointer_to_instance(object_list, 1);
+	CUDAMemory<ITargetObject>::allocate_pointer_to_instance(target_objects, 3);
 	//cudaMallocManaged((void **)&buffer, buffer_size);
-	//create_objects<<<1,1>>>(target_objects, object_list);
+	create_objects<<<1,1>>>(target_objects, object_list);
+	checkCudaErrors(cudaGetLastError());
+	checkCudaErrors( cudaDeviceSynchronize());
 
-	render_it<<<number_of_blocks, number_of_threads>>>(buffer, width, height, target_objects);
-	cudaGetLastError();
-	cudaDeviceSynchronize();
+	render_it<<<number_of_blocks, number_of_threads>>>(buffer, width, height, object_list);
+	checkCudaErrors(cudaGetLastError());
+	checkCudaErrors( cudaDeviceSynchronize());
 	std::ofstream ofs;
 	ofs.open("./cuda_image.ppm");
 	ofs << "P6\n" << width << " " << height << "\n255\n";

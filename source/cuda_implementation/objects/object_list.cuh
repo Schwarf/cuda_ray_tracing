@@ -10,7 +10,7 @@ class ObjectList final : public IObjectList
 {
 public:
 	__device__ __host__ ObjectList(ITargetObject** &list, size_t size);
-	__device__ __host__ bool hit_by_ray(const IRay &ray, IHitRecord &hit_record) const final;
+	__device__ __host__ bool any_object_hit_by_ray(const IRay &ray, IHitRecord &hit_record) const final;
 	__device__ __host__ ~ObjectList() final = default;
 private:
 	ITargetObject ** object_list_;

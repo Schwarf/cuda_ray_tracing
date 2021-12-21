@@ -8,7 +8,7 @@ __device__ __host__ ObjectList::ObjectList(ITargetObject **&list, size_t size)
 {
 
 }
-__device__ __host__ bool ObjectList::hit_by_ray(const IRay &ray, IHitRecord &hit_record) const
+__device__ __host__ bool ObjectList::any_object_hit_by_ray(const IRay &ray, IHitRecord &hit_record) const
 {
 	bool is_hit{};
 	for(size_t index = 0; index < number_of_objects_; ++index)

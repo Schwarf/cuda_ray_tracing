@@ -9,7 +9,7 @@
 class IObjectList
 {
 public:
-	__device__ __host__ virtual bool hit_by_ray(const IRay &ray, IHitRecord &hit_record) const = 0;
+	__device__ __host__ virtual bool any_object_hit_by_ray(const IRay &ray, IHitRecord &hit_record) const = 0;
 	__device__ __host__ virtual ~IObjectList() = default;
 };
 
