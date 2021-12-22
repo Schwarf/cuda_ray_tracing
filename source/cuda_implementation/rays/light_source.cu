@@ -10,9 +10,9 @@ __device__ __host__ LightSource::LightSource(const Point3D &position, float inte
 }
 __device__ __host__ Point3D LightSource::position() const
 {
-	position_;
+	return position_;
 }
 __device__ __host__ float LightSource::intensity() const
 {
-	intensity_;
+	return intensity_;
 }

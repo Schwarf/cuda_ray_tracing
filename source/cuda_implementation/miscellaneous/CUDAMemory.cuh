@@ -52,7 +52,12 @@ public:
 
 	static void release(T * &p_data_pointer)
 	{
-		cudaFree(p_data_pointer);
+		checkCudaErrors(cudaFree(p_data_pointer));
+	}
+
+	static void release_pointer_to_instance(T ** &p_data_pointer)
+	{
+		checkCudaErrors(cudaFree(p_data_pointer));
 	}
 };
 

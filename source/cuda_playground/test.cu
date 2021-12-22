@@ -212,6 +212,4 @@ int main() {
 	checkCudaErrors(cudaFree(fb));
 	float3 x{1,1,1};
 	float3 y{2,2,2};
-	auto result = x*y;
-	std::cout <<
 }
