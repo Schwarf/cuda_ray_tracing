@@ -19,6 +19,12 @@ void check_cuda(cudaError_t result, char const *const func, const char *const fi
 }
 
 template<typename T>
+__global__ static void deep_copy_pointer_to_instance(T ** &in_data_pointer, T ** &out_data_pointer, size_t size)
+{
+	memcpy(in_data_pointer, out_data_pointer, sizeof(T*)*size);
+}
+
+template<typename T>
 class CUDAMemory
 {
 public:
@@ -39,7 +45,6 @@ public:
 	{
 		checkCudaErrors( cudaMalloc((void **)&p_data_pointer, sizeof(T*)*size));
 	}
-
 
 	static void copy_from_host_vector_to_device(std::vector<T> & origin, T * &target, size_t size)
 	{

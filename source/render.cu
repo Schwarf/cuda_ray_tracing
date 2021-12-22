@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iostream>
 
+static void deep_copy_pointer_to_instance(ITargetObject **pObject, ITargetObject **pObject1);
 __device__ __host__ Color get_pixel_color(const IRay &ray,
 										  IObjectList **const object_list,
 										  ILightSourceEffects **light_source_effects,
@@ -80,25 +81,40 @@ int main()
 	IObjectList **object_list;
 	ILightSource **light_sources;
 	ILightSourceEffects **light_source_effects;
+	ITargetObject **target_objects_for_light_sources;
+	IObjectList **object_list_for_light_sources;
 
 	//Memory allocation
 	CUDAMemory<Color>::allocate_managed_instance(buffer, buffer_size);
-	CUDAMemory<IObjectList>::allocate_pointer_to_instance(object_list, 1);
+
 	CUDAMemory<ITargetObject>::allocate_pointer_to_instance(target_objects, number_of_objects);
-	CUDAMemory<ILightSourceEffects>::allocate_pointer_to_instance(light_source_effects, 1);
+	CUDAMemory<IObjectList>::allocate_pointer_to_instance(object_list, 1);
+
+	CUDAMemory<ITargetObject>::allocate_pointer_to_instance(target_objects_for_light_sources, number_of_objects);
+	CUDAMemory<IObjectList>::allocate_pointer_to_instance(object_list_for_light_sources, 1);
+
 	CUDAMemory<ILightSource>::allocate_pointer_to_instance(light_sources, number_of_light_sources);
+	CUDAMemory<ILightSourceEffects>::allocate_pointer_to_instance(light_source_effects, 1);
 
 	// Object creation on GPU
+
 	create_objects<<<1, 1>>>(target_objects, object_list);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
-	create_light_sources<<<1, 1>>>(light_sources, light_source_effects);
+
+	create_objects<<<1, 1>>>(target_objects_for_light_sources, object_list_for_light_sources);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
+
+	create_light_sources<<<1, 1>>>(light_sources, light_source_effects, object_list_for_light_sources);
+	checkCudaErrors(cudaGetLastError());
+	checkCudaErrors(cudaDeviceSynchronize());
+
 	// Computing image buffer on GPU
 	render_it<<<number_of_blocks, number_of_threads>>>(buffer, width, height, object_list, light_source_effects);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
+
 	// Output the buffer
 	std::ofstream ofs;
 	ofs.open("./cuda_image.ppm");

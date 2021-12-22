@@ -75,8 +75,8 @@ __global__ void inline create_objects(ITargetObject **target_objects, IObjectLis
 		auto sphere_radius2 = 2.5f;
 		auto sphere_center3 = Vector3D{2.5f, 1.5f, -10.f};
 		auto sphere_radius3 = 0.5f;
-		auto sphere_center4 = Vector3D{2.5f, 1.5f, -30.f};
-		auto sphere_radius4 = 3.5f;
+		auto sphere_center4 = Vector3D{1.5f, 0.5f, -12.f};
+		auto sphere_radius4 = 1.5f;
 
 
 		IMaterial *p_material = new Material();
@@ -97,7 +97,7 @@ __global__ void inline create_objects(ITargetObject **target_objects, IObjectLis
 	}
 }
 
-__global__ void inline create_light_sources(ILightSource **light_sources, ILightSourceEffects ** light_source_effects)
+__global__ void inline create_light_sources(ILightSource **light_sources, ILightSourceEffects ** light_source_effects, IObjectList ** object_list)
 {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
 		auto light_source_position1 = Point3D{-20.f, -20.f, 20.f};
@@ -115,8 +115,7 @@ __global__ void inline create_light_sources(ILightSource **light_sources, ILight
 		light_sources[0] = light_source1;
 		light_sources[1] = light_source2;
 		light_sources[2] = light_source3;
-		*light_source_effects = new LightSourceEffects(light_sources, 3);
-
+		*light_source_effects = new LightSourceEffects(light_sources, object_list, 3);
 	}
 }
 
