@@ -29,7 +29,6 @@ __device__ __host__ void LightSourceEffects::compute_light_source_effects(const 
 		Vector3D light_direction = (light_source->position() - hit_point).normalize();
 		light_source_ray.set_direction(light_direction);
 		light_source_ray.set_origin(hit_point);
-		printf( "%d \n ", (*object_list_)->any_object_hit_by_ray(light_source_ray, shadow_hit_record));
 		if ((*object_list_)->any_object_hit_by_ray(light_source_ray, shadow_hit_record)) {
 			float distance_shadow_point_to_point = (shadow_hit_record.hit_point() - hit_point).norm();
 			float distance_light_source_to_point = (light_source->position() - hit_point).norm();

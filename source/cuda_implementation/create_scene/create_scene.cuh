@@ -22,8 +22,8 @@ __device__ __host__ inline void build_material(IMaterial * const p_material)
 	p_material->set_shininess(50.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
-	Vector3D color = Vector3D{0.9f, 0.2f, 0.3f};
-	p_material->set_rgb_color(color);
+	Color red = Vector3D{0.9f, 0.2f, 0.3f};
+	p_material->set_rgb_color(red);
 }
 
 
@@ -35,8 +35,8 @@ __device__ __host__ inline void build_material2(IMaterial * const p_material)
 	p_material->set_shininess(50.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
-	Vector3D color = Vector3D{0.3f, 0.9f, 0.3f};
-	p_material->set_rgb_color(color);
+	Color green = Vector3D{0.3f, 0.9f, 0.3f};
+	p_material->set_rgb_color(green);
 }
 
 __device__ __host__ inline void build_material3(IMaterial * const p_material)
@@ -47,8 +47,8 @@ __device__ __host__ inline void build_material3(IMaterial * const p_material)
 	p_material->set_shininess(50.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
-	Vector3D color = Vector3D{0.6f, 0.9f, 0.9f};
-	p_material->set_rgb_color(color);
+	Color light_blue = Vector3D{0.6f, 0.9f, 0.9f};
+	p_material->set_rgb_color(light_blue);
 }
 
 
@@ -60,8 +60,8 @@ __device__ __host__ inline void build_material4(IMaterial * const p_material)
 	p_material->set_shininess(500.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
-	Vector3D color = Vector3D{0.9f, 0.7f, 0.7f};
-	p_material->set_rgb_color(color);
+	Color whitish = Vector3D{0.9f, 0.7f, 0.7f};
+	p_material->set_rgb_color(whitish);
 }
 
 
@@ -69,13 +69,13 @@ __device__ __host__ inline void build_material4(IMaterial * const p_material)
 __global__ void inline create_objects(ITargetObject **target_objects, IObjectList ** object_list)
 {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
-		auto sphere_center = Vector3D{-3.5f, 3.5f, -15.f};
+		auto sphere_center = Vector3D{-7.f, 5.5f, -20.f};
 		auto sphere_radius = 1.5f;
-		auto sphere_center2 = Vector3D{0.5f, -1.5f, -10.f};
-		auto sphere_radius2 = 2.5f;
-		auto sphere_center3 = Vector3D{2.5f, 1.5f, -10.f};
+		auto sphere_center2 = Vector3D{0.5f, -1.5f, -15.f};
+		auto sphere_radius2 = 4.5f;
+		auto sphere_center3 = Vector3D{-1.5f, -2.f, -10.f};
 		auto sphere_radius3 = 0.5f;
-		auto sphere_center4 = Vector3D{1.5f, 0.5f, -12.f};
+		auto sphere_center4 = Vector3D{2.f, 1.5f, -9.f};
 		auto sphere_radius4 = 1.5f;
 
 

@@ -37,11 +37,11 @@ __device__ __host__ Color get_pixel_color(const IRay &ray,
 __global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height, IObjectList **object_list,
 						  ILightSourceEffects **light_source_effects)
 {
-	//size_t width = threadIdx.x + blockIdx.x * blockDim.x;
-	//size_t height = threadIdx.y + blockIdx.y * blockDim.y;
+	size_t width = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t height = threadIdx.y + blockIdx.y * blockDim.y;
 
-	size_t width = threadIdx.x;
-	size_t height = blockIdx.x;
+	//size_t width = threadIdx.x;
+	//size_t height = blockIdx.x;
 	if ((width >= max_width) || (height >= max_height)) {
 		return;
 	}
@@ -63,17 +63,14 @@ int main()
 {
 	constexpr size_t width = 1024;
 	constexpr size_t height = 768;
-	constexpr size_t number_of_blocks = 768;
-	constexpr size_t number_of_threads = 1024;
+//	constexpr size_t number_of_blocks = 768;
+//	constexpr size_t number_of_threads = 512;
 	constexpr size_t number_of_objects = 4;
 	constexpr size_t number_of_light_sources = 3;
-
-
-
 	// Why is 32 the maximum number of threads per block
-	//constexpr size_t threads_per_block = 32;
-	//dim3 number_of_threads(threads_per_block, threads_per_block);
-	//dim3 number_of_blocks(width / threads_per_block, height / threads_per_block);
+	constexpr size_t threads_per_block = 16;
+	dim3 number_of_threads(threads_per_block, threads_per_block);
+	dim3 number_of_blocks(width / threads_per_block, height / threads_per_block);
 	size_t buffer_size = width * height * sizeof(Color);
 	// Pointers
 	Color *buffer;
