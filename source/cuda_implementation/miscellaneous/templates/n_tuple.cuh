@@ -38,6 +38,13 @@ struct N_Tuple
 		*this = (*this) / norm;
 		return *this;
 	}
+	// Vector addition
+	__device__ __host__ N_Tuple<dimension, T> & operator+=(const N_Tuple<dimension, T> &rhs)
+	{
+		for (size_t index = dimension; index--; (*this)[index] += rhs[index]);
+		return *this;
+	}
+
 
 };
 
@@ -77,9 +84,10 @@ __device__ __host__ T operator*(const N_Tuple<dimension, T> &lhs, const N_Tuple<
 template<size_t dimension, typename T>
 __device__ __host__ N_Tuple<dimension, T> operator+(N_Tuple<dimension, T> lhs, const N_Tuple<dimension, T> &rhs)
 {
-	for (size_t index = dimension; index--; lhs[index] += rhs[index]);
+	lhs += rhs;
 	return lhs;
 }
+
 
 // Vector subtraction
 template<size_t dimension, typename T>

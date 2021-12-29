@@ -13,29 +13,33 @@
 #include <fstream>
 #include <iostream>
 
-static void deep_copy_pointer_to_instance(ITargetObject **pObject, ITargetObject **pObject1);
 __device__ __host__ Color get_pixel_color(Ray &ray,
 										  IObjectList **const object_list,
 										  ILightSourceEffects **light_source_effects,
 										  size_t recursion_depth)
 {
 
-	auto hit_record = HitRecord();
-	auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
-	if (!is_hit) {
-		return Color{0.2, 0.7, 0.8};
+	Color final_color{0., 0., 0.};
+	for (size_t reflect_index = 0; reflect_index < 2; reflect_index++) {
+		auto hit_record = HitRecord();
+		auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
+		if (!is_hit) {
+			return Color{0.2, 0.7, 0.8};
+		}
+		auto reflected_ray = Ray();
+		float diffuse_intensity{};
+		float specular_intensity{};
+		(*light_source_effects)
+			->compute_light_source_effects(ray, hit_record, diffuse_intensity, specular_intensity);
+		Color diffuse_color = diffuse_intensity * hit_record.get_material()->diffuse_reflection()
+			* hit_record.get_material()->rgb_color();
+		Color white = Color{1, 1, 1};
+		Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
+		Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
+		final_color =  diffuse_color + specular_color + ambient_color;
 	}
-	auto reflected_ray = Ray();
-	float diffuse_intensity{};
-	float specular_intensity{};
-	(*light_source_effects)
-		->compute_light_source_effects(ray, hit_record, diffuse_intensity, specular_intensity);
-	Color diffuse_color = diffuse_intensity * hit_record.get_material()->diffuse_reflection()
-		* hit_record.get_material()->rgb_color();
-	Color white = Color{1, 1, 1};
-	Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
-	Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
-	return diffuse_color + specular_color + ambient_color;
+	return final_color;
+	//return diffuse_color + specular_color + ambient_color;
 }
 
 __global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height, IObjectList **object_list,
