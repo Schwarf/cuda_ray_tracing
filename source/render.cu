@@ -14,24 +14,28 @@
 #include <iostream>
 
 static void deep_copy_pointer_to_instance(ITargetObject **pObject, ITargetObject **pObject1);
-__device__ __host__ Color get_pixel_color(const IRay &ray,
+__device__ __host__ Color get_pixel_color(Ray &ray,
 										  IObjectList **const object_list,
 										  ILightSourceEffects **light_source_effects,
-										  IHitRecord &hit_record,
 										  size_t recursion_depth)
 {
+
+	auto hit_record = HitRecord();
 	auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
 	if (!is_hit) {
 		return Color{0.2, 0.7, 0.8};
 	}
+	auto reflected_ray = Ray();
 	float diffuse_intensity{};
 	float specular_intensity{};
 	(*light_source_effects)
 		->compute_light_source_effects(ray, hit_record, diffuse_intensity, specular_intensity);
-	Color diffuse_color = diffuse_intensity*hit_record.get_material()->diffuse_reflection() * hit_record.get_material()->rgb_color();
+	Color diffuse_color = diffuse_intensity * hit_record.get_material()->diffuse_reflection()
+		* hit_record.get_material()->rgb_color();
 	Color white = Color{1, 1, 1};
-	Color specular_color = specular_intensity* white * hit_record.get_material()->specular_reflection();
-	return diffuse_color + specular_color;
+	Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
+	Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
+	return diffuse_color + specular_color + ambient_color;
 }
 
 __global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height, IObjectList **object_list,
@@ -52,8 +56,7 @@ __global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height,
 	Vector3D direction = Vector3D{x_direction, y_direction, z_direction}.normalize();
 	Point3D origin = Point3D{0, 0, 0};
 	auto ray = Ray(origin, direction);
-	auto hit_record = HitRecord();
-	Color pixel_color = get_pixel_color(ray, object_list, light_source_effects, hit_record, 2);
+	Color pixel_color = get_pixel_color(ray, object_list, light_source_effects, 2);
 	size_t pixel_index = height * max_width + width;
 	buffer[pixel_index] = pixel_color;
 
@@ -128,8 +131,6 @@ int main()
 	checkCudaErrors(cudaGetLastError());
 	release_object_list<<<1, 1>>>(object_list, 1);
 	checkCudaErrors(cudaGetLastError());
-//	CUDAMemory<ITargetObject>::release_pointer_to_instance(target_objects);
-//	CUDAMemory<IObjectList>::release_pointer_to_instance(object_list);
 	cudaDeviceReset();
-return 0;
+	return 0;
 }

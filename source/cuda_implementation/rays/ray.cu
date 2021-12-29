@@ -28,4 +28,3 @@ __device__ __host__ void Ray::set_origin(const Point3D &origin)
 {
 	origin_ = origin;
 }
-

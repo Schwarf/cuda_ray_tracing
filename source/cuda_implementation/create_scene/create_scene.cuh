@@ -18,7 +18,7 @@ __device__ __host__ inline void build_material(IMaterial * const p_material)
 {
 	p_material->set_specular_reflection(0.3f);
 	p_material->set_diffuse_reflection(0.6f);
-	p_material->set_ambient_reflection(0.3f);
+	p_material->set_ambient_reflection(0.2f);
 	p_material->set_shininess(50.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
@@ -43,7 +43,7 @@ __device__ __host__ inline void build_material3(IMaterial * const p_material)
 {
 	p_material->set_specular_reflection(0.2f);
 	p_material->set_diffuse_reflection(0.6f);
-	p_material->set_ambient_reflection(0.5f);
+	p_material->set_ambient_reflection(0.1f);
 	p_material->set_shininess(50.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
@@ -56,11 +56,24 @@ __device__ __host__ inline void build_material4(IMaterial * const p_material)
 {
 	p_material->set_specular_reflection(0.8f);
 	p_material->set_diffuse_reflection(0.6f);
-	p_material->set_ambient_reflection(0.5f);
-	p_material->set_shininess(500.0f);
+	p_material->set_ambient_reflection(0.12f);
+	p_material->set_shininess(10.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
 	Color whitish = Vector3D{0.9f, 0.7f, 0.7f};
+	p_material->set_rgb_color(whitish);
+}
+
+
+__device__ __host__ inline void build_material5(IMaterial * const p_material)
+{
+	p_material->set_specular_reflection(10.f);
+	p_material->set_diffuse_reflection(0.6f);
+	p_material->set_ambient_reflection(0.5f);
+	p_material->set_shininess(1200.0f);
+	p_material->set_transparency(0.0001f);
+	p_material->set_refraction_index(1.0f);
+	Color whitish = Vector3D{0.3f, 0.3f, 0.3f};
 	p_material->set_rgb_color(whitish);
 }
 
@@ -77,22 +90,28 @@ __global__ void inline create_objects(ITargetObject **target_objects, IObjectLis
 		auto sphere_radius3 = 0.5f;
 		auto sphere_center4 = Vector3D{2.f, 1.5f, -9.f};
 		auto sphere_radius4 = 1.5f;
+		auto sphere_center5 = Vector3D{-5.5f, -4.f, -10.f};
+		auto sphere_radius5 = 1.f;
 
 
 		IMaterial *p_material = new Material();
 		IMaterial *p_material2 = new Material();
 		IMaterial *p_material3 = new Material();
 		IMaterial *p_material4 = new Material();
+		IMaterial *p_material5 = new Material();
 
 		build_material(p_material);
 		build_material2(p_material2);
 		build_material3(p_material3);
 		build_material4(p_material4);
+		build_material5(p_material5);
 
 		target_objects[0] = new Sphere(sphere_center, sphere_radius, p_material);
 		target_objects[1] = new Sphere(sphere_center2, sphere_radius2, p_material2);
 		target_objects[2] = new Sphere(sphere_center3, sphere_radius3, p_material3);
 		target_objects[3] = new Sphere(sphere_center4, sphere_radius4, p_material4);
+		//target_objects[4] = new Sphere(sphere_center5, sphere_radius5, p_material5);
+
 		*object_list = new ObjectList(target_objects, 4);
 	}
 }
