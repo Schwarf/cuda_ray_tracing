@@ -36,7 +36,7 @@ __device__ __host__ Color get_pixel_color(Ray &ray,
 		Color white = Color{1, 1, 1};
 		Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
 		Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
-		final_color =  diffuse_color + specular_color + ambient_color;
+		final_color += diffuse_color + specular_color + ambient_color;
 	}
 	return final_color;
 	//return diffuse_color + specular_color + ambient_color;
