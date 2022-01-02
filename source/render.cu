@@ -10,6 +10,7 @@
 #include "cuda_implementation/create_scene/create_scene.cuh"
 #include "cuda_implementation/rays/interfaces/i_light_source_effects.cuh"
 #include "cuda_implementation/rays/interfaces/i_light_source.cuh"
+#include "cuda_implementation/rays/ray_interactions.cuh"
 #include <fstream>
 #include <iostream>
 
@@ -20,26 +21,50 @@ __device__ __host__ Color get_pixel_color(Ray &ray,
 {
 
 	Color final_color{0., 0., 0.};
-	for (size_t reflect_index = 0; reflect_index < 2; reflect_index++) {
-		auto hit_record = HitRecord();
-		auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
-		if (!is_hit) {
-			return Color{0.2, 0.7, 0.8};
-		}
-		auto reflected_ray = Ray();
-		float diffuse_intensity{};
-		float specular_intensity{};
-		(*light_source_effects)
-			->compute_light_source_effects(ray, hit_record, diffuse_intensity, specular_intensity);
-		Color diffuse_color = diffuse_intensity * hit_record.get_material()->diffuse_reflection()
-			* hit_record.get_material()->rgb_color();
-		Color white = Color{1, 1, 1};
-		Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
-		Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
-		final_color += diffuse_color + specular_color + ambient_color;
+	auto hit_record = HitRecord();
+	auto reflected_ray = Ray();
+	auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
+	if (!is_hit) {
+		return Color{0.2, 0.7, 0.8};
 	}
+	float diffuse_intensity{};
+	float specular_intensity{};
+	(*light_source_effects)
+		->compute_light_source_effects(ray, hit_record, diffuse_intensity, specular_intensity);
+	Color diffuse_color = diffuse_intensity * hit_record.get_material()->diffuse_reflection()
+		* hit_record.get_material()->rgb_color();
+	Color white = Color{1, 1, 1};
+	Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
+	Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
+	auto initial_color = diffuse_color + specular_color + ambient_color;
+
+	Color reflected_color{0, 0, 0};
+	auto hit_reflected_record = HitRecord();
+	for(int i = 0; i < 3; ++i) {
+		specular_scatter(ray, hit_reflected_record, reflected_ray);
+		auto is_reflected_hit = (*object_list)->any_object_hit_by_ray(reflected_ray, hit_reflected_record);
+		if (!is_reflected_hit) {
+			continue;
+		}
+		float diffuse_reflected_intensity{};
+		float specular_reflected_intensity{};
+		(*light_source_effects)
+			->compute_light_source_effects(ray,
+										   hit_reflected_record,
+										   diffuse_reflected_intensity,
+										   specular_reflected_intensity);
+		Color diffuse_reflected_color =
+			diffuse_reflected_intensity * hit_reflected_record.get_material()->diffuse_reflection()
+				* hit_reflected_record.get_material()->rgb_color();
+		Color specular_reflected_color =
+			specular_reflected_intensity * white * hit_reflected_record.get_material()->specular_reflection();
+		Color ambient_reflected_color = hit_reflected_record.get_material()->ambient_reflection()
+			* hit_reflected_record.get_material()->rgb_color();
+		reflected_color += diffuse_reflected_color + specular_reflected_color + ambient_reflected_color;
+		ray = reflected_ray;
+	}
+	final_color = initial_color + reflected_color*hit_reflected_record.get_material()->ambient_reflection();
 	return final_color;
-	//return diffuse_color + specular_color + ambient_color;
 }
 
 __global__ void render_it(Vector3D *buffer, size_t max_width, size_t max_height, IObjectList **object_list,
@@ -121,7 +146,7 @@ int main()
 
 	// Output the buffer
 	std::ofstream ofs;
-	ofs.open("./cuda_image.ppm");
+	ofs.open("./image_cuda.ppm");
 	ofs << "P6\n" << width << " " << height << "\n255\n";
 	for (size_t pixel_index = 0; pixel_index < width * height; ++pixel_index) {
 		for (size_t color_index = 0; color_index < 3; color_index++) {

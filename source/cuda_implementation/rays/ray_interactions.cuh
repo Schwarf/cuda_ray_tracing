@@ -24,6 +24,9 @@ __device__ __host__ inline void specular_scatter(const IRay &incoming_ray, const
 	auto const reflected_direction = reflection(incoming_ray.direction_normalized(), hit_record.hit_normal());
 	scattered_ray.set_origin(hit_record.hit_point());
 	scattered_ray.set_direction(reflected_direction);
+//	printf( "Ray  %f, %f, %f \n", incoming_ray.origin()[0], incoming_ray.origin()[1], incoming_ray.origin()[2]);
+//	printf( "Reflected Ray  %f, %f, %f \n", scattered_ray.origin()[0], scattered_ray.origin()[1], scattered_ray.origin()[2]);
+
 }
 
 
