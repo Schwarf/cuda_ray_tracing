@@ -14,6 +14,13 @@
 #include <fstream>
 #include <iostream>
 
+
+//__device__ __host__ Color get_reflected_color(const Ray & incoming_ray,IObjectList **const object_list,
+//											  ILightSourceEffects **light_source_effects)
+//{}
+
+
+
 __device__ __host__ Color get_pixel_color(Ray &ray,
 										  IObjectList **const object_list,
 										  ILightSourceEffects **light_source_effects,
@@ -40,7 +47,7 @@ __device__ __host__ Color get_pixel_color(Ray &ray,
 
 	Color reflected_color{0, 0, 0};
 	auto hit_reflected_record = HitRecord();
-	for(int i = 0; i < 3; ++i) {
+	for(int i = 0; i < 2; ++i) {
 		specular_scatter(ray, hit_reflected_record, reflected_ray);
 		auto is_reflected_hit = (*object_list)->any_object_hit_by_ray(reflected_ray, hit_reflected_record);
 		if (!is_reflected_hit) {
@@ -97,7 +104,7 @@ int main()
 	constexpr size_t height = 768;
 //	constexpr size_t number_of_blocks = 768;
 //	constexpr size_t number_of_threads = 512;
-	constexpr size_t number_of_objects = 4;
+	constexpr size_t number_of_objects = 5;
 	constexpr size_t number_of_light_sources = 3;
 	// Why is 32 the maximum number of threads per block
 	constexpr size_t threads_per_block = 16;
@@ -127,11 +134,11 @@ int main()
 
 	// Object creation on GPU
 
-	create_objects<<<1, 1>>>(target_objects, object_list);
+	create_objects<<<1, 1>>>(target_objects, object_list, number_of_objects);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	create_objects<<<1, 1>>>(target_objects_for_light_sources, object_list_for_light_sources);
+	create_objects<<<1, 1>>>(target_objects_for_light_sources, object_list_for_light_sources, number_of_objects);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 

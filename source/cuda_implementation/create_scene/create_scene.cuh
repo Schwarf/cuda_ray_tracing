@@ -68,8 +68,8 @@ __device__ __host__ inline void build_material4(IMaterial * const p_material)
 __device__ __host__ inline void build_material5(IMaterial * const p_material)
 {
 	p_material->set_specular_reflection(10.f);
-	p_material->set_diffuse_reflection(0.6f);
-	p_material->set_ambient_reflection(0.5f);
+	p_material->set_diffuse_reflection(0.00001f);
+	p_material->set_ambient_reflection(0.8f);
 	p_material->set_shininess(1200.0f);
 	p_material->set_transparency(0.0001f);
 	p_material->set_refraction_index(1.0f);
@@ -79,18 +79,18 @@ __device__ __host__ inline void build_material5(IMaterial * const p_material)
 
 
 
-__global__ void inline create_objects(ITargetObject **target_objects, IObjectList ** object_list)
+__global__ void inline create_objects(ITargetObject **target_objects, IObjectList ** object_list, size_t number_of_objects)
 {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
 		auto sphere_center = Vector3D{-7.f, 5.5f, -20.f};
 		auto sphere_radius = 1.5f;
-		auto sphere_center2 = Vector3D{0.5f, -1.5f, -15.f};
-		auto sphere_radius2 = 4.5f;
-		auto sphere_center3 = Vector3D{-1.5f, -2.f, -10.f};
+		auto sphere_center2 = Vector3D{2.5f, -1.5f, -15.f};
+		auto sphere_radius2 = 3.5f;
+		auto sphere_center3 = Vector3D{-1.5f, -2.f, -1000.f};
 		auto sphere_radius3 = 0.5f;
 		auto sphere_center4 = Vector3D{2.f, 1.5f, -9.f};
 		auto sphere_radius4 = 1.5f;
-		auto sphere_center5 = Vector3D{-5.5f, -4.f, -10.f};
+		auto sphere_center5 = Vector3D{-3.75f, -2.f, -10.f};
 		auto sphere_radius5 = 1.f;
 
 
@@ -110,9 +110,9 @@ __global__ void inline create_objects(ITargetObject **target_objects, IObjectLis
 		target_objects[1] = new Sphere(sphere_center2, sphere_radius2, p_material2);
 		target_objects[2] = new Sphere(sphere_center3, sphere_radius3, p_material3);
 		target_objects[3] = new Sphere(sphere_center4, sphere_radius4, p_material4);
-		//target_objects[4] = new Sphere(sphere_center5, sphere_radius5, p_material5);
+		target_objects[4] = new Sphere(sphere_center5, sphere_radius5, p_material5);
 
-		*object_list = new ObjectList(target_objects, 4);
+		*object_list = new ObjectList(target_objects, number_of_objects);
 	}
 }
 
