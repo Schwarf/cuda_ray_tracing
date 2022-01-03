@@ -19,8 +19,8 @@ public:
 	__device__ __host__ void set_direction(const Vector3D &direction) override;
 	__device__ __host__ void set_origin(const Point3D &origin) override;
 private:
-	Vector3D direction_;
-	Point3D origin_;
+	Vector3D direction_{0,0,0};
+	Point3D origin_{0,0,0};
 };
 
 

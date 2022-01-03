@@ -14,7 +14,7 @@ __device__ __host__ LightSourceEffects::LightSourceEffects(ILightSource **&list,
 }
 
 __device__ __host__ void LightSourceEffects::compute_light_source_effects(const IRay &ray,
-																		  IHitRecord &hit_record,
+																		  const IHitRecord &hit_record,
 																		  float &diffuse_intensity,
 																		  float &specular_intensity) const
 {

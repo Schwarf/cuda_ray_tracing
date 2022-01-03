@@ -18,9 +18,9 @@ class LightSourceEffects : public ILightSourceEffects
 public:
 	__device__ __host__ LightSourceEffects(ILightSource** &list, IObjectList** & object_list, size_t size);
 	__device__ __host__ void compute_light_source_effects(const IRay &ray,
-											  IHitRecord &hit_record,
-											  float &diffuse_intensity,
-											  float &specular_intensity) const final;
+														  const IHitRecord &hit_record,
+														  float &diffuse_intensity,
+														  float &specular_intensity) const final;
 
 private:
 	ILightSource ** light_source_list_;

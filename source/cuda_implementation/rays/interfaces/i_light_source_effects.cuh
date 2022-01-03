@@ -11,8 +11,8 @@ class ILightSourceEffects
 {
 public:
 	__device__ __host__	virtual void compute_light_source_effects(const IRay &ray,
-											  IHitRecord &hit_record,
-											  float &diffuse_intensity,
-											  float &specular_intensity) const = 0;
+																	 const IHitRecord &hit_record,
+																	 float &diffuse_intensity,
+																	 float &specular_intensity) const = 0;
 };
 #endif //I_LIGHT_SOURCE_LIST_H
