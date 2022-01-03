@@ -44,6 +44,12 @@ struct N_Tuple
 		for (size_t index = dimension; index--; (*this)[index] += rhs[index]);
 		return *this;
 	}
+	// Scalar multiplication
+	__device__ __host__ N_Tuple<dimension, T> & operator*=(const T rhs)
+	{
+		for (size_t index = dimension; index--; (*this)[index] *= rhs);
+		return *this;
+	}
 
 
 };

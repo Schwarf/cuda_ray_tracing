@@ -15,39 +15,16 @@
 #include <iostream>
 
 
-//__device__ __host__ Color get_reflected_color(const Ray & incoming_ray,IObjectList **const object_list,
-//											  ILightSourceEffects **light_source_effects)
-//{}
-
-
-
-__device__ __host__ Color get_pixel_color(Ray &ray,
-										  IObjectList **const object_list,
-										  ILightSourceEffects **light_source_effects,
-										  size_t recursion_depth)
+__device__ __host__ Color get_reflected_color(const Ray &incoming_ray, IObjectList **const object_list,
+											  ILightSourceEffects **light_source_effects)
 {
-
-	Color final_color{0., 0., 0.};
-	auto hit_record = HitRecord();
-	auto reflected_ray = Ray();
-	auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
-	if (!is_hit) {
-		return Color{0.2, 0.7, 0.8};
-	}
-	float diffuse_intensity{};
-	float specular_intensity{};
-	(*light_source_effects)
-		->compute_light_source_effects(ray, hit_record, diffuse_intensity, specular_intensity);
-	Color diffuse_color = diffuse_intensity * hit_record.get_material()->diffuse_reflection()
-		* hit_record.get_material()->rgb_color();
-	Color white = Color{1, 1, 1};
-	Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
-	Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
-	auto initial_color = diffuse_color + specular_color + ambient_color;
-
 	Color reflected_color{0, 0, 0};
+	Color white = Color{1, 1, 1};
+
+	auto ray = incoming_ray;
+	auto reflected_ray = Ray();
 	auto hit_reflected_record = HitRecord();
-	for(int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 2; ++i) {
 		specular_scatter(ray, hit_reflected_record, reflected_ray);
 		auto is_reflected_hit = (*object_list)->any_object_hit_by_ray(reflected_ray, hit_reflected_record);
 		if (!is_reflected_hit) {
@@ -70,7 +47,35 @@ __device__ __host__ Color get_pixel_color(Ray &ray,
 		reflected_color += diffuse_reflected_color + specular_reflected_color + ambient_reflected_color;
 		ray = reflected_ray;
 	}
-	final_color = initial_color + reflected_color*hit_reflected_record.get_material()->ambient_reflection();
+	reflected_color *= hit_reflected_record.get_material()->ambient_reflection();
+	return reflected_color;
+}
+
+__device__ __host__ Color get_pixel_color(Ray &ray,
+										  IObjectList **const object_list,
+										  ILightSourceEffects **light_source_effects,
+										  size_t recursion_depth)
+{
+
+	Color final_color{0., 0., 0.};
+	Color white = Color{1, 1, 1};
+	auto hit_record = HitRecord();
+	auto reflected_ray = Ray();
+	auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
+	if (!is_hit) {
+		return Color{0.2, 0.7, 0.8};
+	}
+	float diffuse_intensity{};
+	float specular_intensity{};
+	(*light_source_effects)
+		->compute_light_source_effects(ray, hit_record, diffuse_intensity, specular_intensity);
+	Color diffuse_color = diffuse_intensity * hit_record.get_material()->diffuse_reflection()
+		* hit_record.get_material()->rgb_color();
+	Color specular_color = specular_intensity * white * hit_record.get_material()->specular_reflection();
+	Color ambient_color = hit_record.get_material()->ambient_reflection() * hit_record.get_material()->rgb_color();
+	auto initial_color = diffuse_color + specular_color + ambient_color;
+
+	final_color = initial_color + get_reflected_color(ray, object_list, light_source_effects);
 	return final_color;
 }
 
