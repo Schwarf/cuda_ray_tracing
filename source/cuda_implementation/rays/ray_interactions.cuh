@@ -19,13 +19,16 @@ __device__ __host__ inline void specular_scatter(const IRay &incoming_ray, const
 
 	auto reflection = [](const Vector3D &v, const Vector3D &n)
 	{
-		return v - n * (2.f * (v * n));
+		return v - (n * (2.f * (v * n)));
 	};
-	auto const reflected_direction = reflection(incoming_ray.direction_normalized(), hit_record.hit_normal());
+	auto reflected_direction = reflection(incoming_ray.direction_normalized(), hit_record.hit_normal());
+//	printf( "Specular Reflected direction  %f, %f, %f \n", reflected_direction[0], reflected_direction[1], reflected_direction[2]);
 	scattered_ray.set_origin(hit_record.hit_point());
 	scattered_ray.set_direction(reflected_direction);
-//	printf( "Ray  %f, %f, %f \n", incoming_ray.origin()[0], incoming_ray.origin()[1], incoming_ray.origin()[2]);
-//	printf( "Reflected Ray  %f, %f, %f \n", scattered_ray.origin()[0], scattered_ray.origin()[1], scattered_ray.origin()[2]);
+//	printf( "Specular Reflected hit  %f, %f, %f \n", hit_record.hit_normal()[0], hit_record.hit_normal()[1], hit_record.hit_normal()[2]);
+
+	//printf( "Ray  %f, %f, %f \n", incoming_ray.direction_normalized()[0], incoming_ray.direction_normalized()[1], incoming_ray.direction_normalized()[2]);
+	//printf( "Reflected Ray  %f, %f, %f \n", scattered_ray.direction_normalized()[0], scattered_ray.direction_normalized()[1], scattered_ray.direction_normalized()[2]);
 
 }
 
