@@ -3,7 +3,7 @@
 //
 
 #include "camera.cuh"
-__device__ __host__ Camera::Camera(int image_width, int image_height, float viewport_width, float focal_length)
+__device__ __host__ Camera::Camera(size_t image_width, size_t image_height, float viewport_width, float focal_length)
 {
 	image_width_ = image_width;
 	image_height_ = image_height;
@@ -12,9 +12,9 @@ __device__ __host__ Camera::Camera(int image_width, int image_height, float view
 	float viewport_height = viewport_width / aspect_ratio_;
 	horizontal_direction_[0] = viewport_width;
 	vertical_direction_[1] = viewport_height;
-
+	lower_left_corner_ =
+		origin_ - horizontal_direction_ / 2.f - vertical_direction_ / 2.f - Point3D {0, 0, focal_length};
 }
-
 
 __device__ __host__ void Camera::get_pixel_coordinates(const size_t &width_index,
 													   const size_t &height_index,
@@ -135,4 +135,14 @@ __device__ __host__ Color Camera::get_reflected_color(const Ray &incoming_ray,
 	reflected_color *= hit_record.get_material()->ambient_reflection();
 	return reflected_color;
 
+}
+__device__ __host__ Vector3D Camera::get_ray_direction(const size_t &width_index, const size_t &height_index) const
+{
+	float width_coordinate{};
+	float height_coordinate{};
+	get_pixel_coordinates(width_index, height_index, width_coordinate, height_coordinate);
+	auto direction =
+		lower_left_corner_ + width_coordinate * horizontal_direction_ + height_coordinate * vertical_direction_
+			- origin_;
+	return direction;
 }

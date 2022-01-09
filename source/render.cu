@@ -12,24 +12,28 @@
 __global__ void render_it(Vector3D *buffer, size_t image_width, size_t image_height, IObjectList **object_list,
 						  ILightSourceEffects **light_source_effects)
 {
-	size_t width = threadIdx.x + blockIdx.x * blockDim.x;
-	size_t height = threadIdx.y + blockIdx.y * blockDim.y;
+	size_t width_index = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t height_index = threadIdx.y + blockIdx.y * blockDim.y;
 
-	//size_t width = threadIdx.x;
-	//size_t height = blockIdx.x;
-	if ((width >= image_width) || (height >= image_height)) {
+	//size_t width_index = threadIdx.x;
+	//size_t height_index = blockIdx.x;
+	if ((width_index >= image_width) || (height_index >= image_height)) {
 		return;
 	}
-	float x_direction = float(width) - float(image_width) / 2.f;
-	float y_direction = float(height) - float(image_height) / 2.f;
+	float x_direction = float(width_index) - float(image_width) / 2.f;
+	float y_direction = float(height_index) - float(image_height) / 2.f;
 	float z_direction = -float(image_height + image_width) / 2.f;
 
 	Vector3D direction = Vector3D{x_direction, y_direction, z_direction}.normalize();
 	Point3D origin = Point3D{0, 0, 0};
-	auto ray = Ray(origin, direction);
+
 	auto camera = Camera(image_width, image_height, 2.f, 1.f);
+	auto direction2 = camera.get_ray_direction(width_index, height_index);
+	//printf("1, %f, %f, %f \n", direction[0],direction[1],direction[2]);
+	//printf("2, %f, %f, %f \n", direction2[0],direction2[1],direction2[2]);
+	auto ray = Ray(origin, direction2);
 	Color pixel_color = camera.get_pixel_color(ray, object_list, light_source_effects);
-	size_t pixel_index = height * image_width + width;
+	size_t pixel_index = height_index * image_width + width_index;
 	buffer[pixel_index] = pixel_color;
 
 }
@@ -88,6 +92,14 @@ int main()
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	// Output the buffer
+		std::ofstream integers;
+		integers.open("./integers.txt");
+		integers << "P6\n" << width << " " << height << "\n255\n";
+		for (size_t pixel_index = 0; pixel_index < width * height; ++pixel_index) {
+			for (size_t color_index = 0; color_index < 3; color_index++) {
+				integers << buffer[pixel_index][color_index] << ", ";
+			}
+		}
 	std::ofstream ofs;
 	ofs.open("./image_cuda.ppm");
 	ofs << "P6\n" << width << " " << height << "\n255\n";
