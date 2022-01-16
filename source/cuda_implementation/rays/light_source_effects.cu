@@ -45,3 +45,14 @@ __device__ __host__ void LightSourceEffects::compute_light_source_effects(const 
 	}
 
 }
+__device__ __host__ void LightSourceEffects::set_background_colors(const Color &background_color1,
+																   const Color &background_color2)
+{
+	background_color1_ = background_color1;
+	background_color2_ = background_color2;
+
+}
+__device__ __host__ Color LightSourceEffects::get_background(float parameter) const
+{
+	return (1.f -parameter)*background_color1_ + parameter*background_color2_;
+}

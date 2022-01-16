@@ -36,7 +36,8 @@ __device__ __host__ Color Camera::get_pixel_color(Ray &ray,
 	auto reflected_ray = Ray();
 	auto is_hit = (*object_list)->any_object_hit_by_ray(ray, hit_record);
 	if (!is_hit) {
-		return Color{0.2, 0.7, 0.8};
+		auto mix_parameter = 1.f/2.f*( (ray.direction_normalized()[0]  + ray.direction_normalized()[1])/2.f + 1.f);
+		return (*light_source_effects)->get_background(mix_parameter);
 	}
 	float diffuse_intensity{};
 	float specular_intensity{};
